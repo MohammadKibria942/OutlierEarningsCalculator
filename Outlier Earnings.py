@@ -39,8 +39,8 @@ def normalize_time(row):
 
     return int(hours), int(minutes), int(seconds)
 
-# Load the data file
-data = pd.read_csv('[INSERT CSV LOCATION HERE]')
+# Load the file
+data = pd.read_csv('[INSERT FILE LOCATION HERE]')
 
 # Parse the duration column into hours, minutes, and seconds
 data[['hours', 'minutes', 'seconds']] = data['duration'].apply(
@@ -56,15 +56,15 @@ total_time_per_day = data.groupby('workDate')[['hours', 'minutes', 'seconds', 'p
 # Normalize the aggregated time
 total_time_per_day[['hours', 'minutes', 'seconds']] = total_time_per_day.apply(normalize_time, axis=1, result_type='expand')
 
-# Sort by date in ascending order (earliest date first)
+# Sort by date in ascending order
 total_time_per_day['workDate'] = pd.to_datetime(total_time_per_day['workDate'])
 total_time_per_day = total_time_per_day.sort_values(by='workDate', ascending=True)
 
-# Print total hours, minutes, seconds, and payout per day
+# Print total hours, minutes, seconds, and pay per day
 for _, row in total_time_per_day.iterrows():
     print(f"Date: {row['workDate'].strftime('%Y-%m-%d')}, Hours: {row['hours']}, Minutes: {row['minutes']}, Seconds: {row['seconds']}, Total Earned: ${row['payout']:.2f}")
 
-# Calculate total overall time and earnings
+# Calculate total time and earnings
 total_seconds_all_days = total_time_per_day['hours'] * 3600 + total_time_per_day['minutes'] * 60 + total_time_per_day['seconds']
 total_seconds = total_seconds_all_days.sum()
 total_hours = total_seconds // 3600
@@ -72,16 +72,16 @@ remaining_seconds = total_seconds % 3600
 total_minutes = remaining_seconds // 60
 total_seconds = remaining_seconds % 60
 
-# Calculate total overall earnings
+# Calculate total earnings
 total_earnings = total_time_per_day['payout'].sum()
 
-# Calculate total earnings for missionReward payType
-mission_reward_data = data[data['payType'] == 'missionReward']
-mission_reward_earnings = mission_reward_data['payout'].sum()
+# Calculate total earnings for missions and referrals
+rewards_data = data[data['payType'].isin(['missionReward', 'referralReward'])]
+rewards_earnings = rewards_data['payout'].sum()
 
-# Print the total overall time and total earnings
+# Print the total overall time and earnings
 print(f"\nTotal Overall Time: {total_hours} hours, {total_minutes} minutes, {total_seconds} seconds")
 print(f"Total Overall Earnings: ${total_earnings:.2f}")
 
-# Print the total earnings from missionReward payType
-print(f"Total Earnings from missionReward: ${mission_reward_earnings:.2f}")
+# Print the total earnings from missions and referrals
+print(f"Total Earnings from missionReward and referralReward: ${rewards_earnings:.2f}")
